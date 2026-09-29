@@ -1,0 +1,592 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Sazid Transport – Book buses, trains, cabs and taxis</title>
+
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:wght@600;700;800&family=DM+Sans:wght@400;500;700&display=swap" rel="stylesheet" />
+
+<script crossorigin src="https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.production.min.js"></script>
+<script crossorigin src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.production.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/7.23.9/babel.min.js"></script>
+
+<style>
+  :root {
+    --ink: #101b2d;
+    --muted: #5d6b82;
+    --line: #dbe2ec;
+    --paper: #f1f4f9;
+    --card: #ffffff;
+    --green: #0b6b4f;
+    --green-dark: #084d3a;
+    --plate: #f5b81c;
+    --danger: #c0392b;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+  body {
+    font-family: "DM Sans", system-ui, -apple-system, "Segoe UI", Arial, sans-serif;
+    background: var(--paper);
+    color: var(--ink);
+    line-height: 1.5;
+  }
+  h1, h2, h3, .brand { font-family: "Bricolage Grotesque", "DM Sans", system-ui, sans-serif; }
+  button, input, select { font: inherit; color: inherit; }
+  :focus-visible { outline: 3px solid var(--plate); outline-offset: 2px; }
+
+  .top { background: var(--green-dark); color: #fff; }
+  .nav {
+    max-width: 1140px; margin: 0 auto; padding: 16px 24px;
+    display: flex; align-items: center; justify-content: space-between;
+  }
+  .brand { font-size: 24px; font-weight: 800; letter-spacing: -0.5px; display: flex; align-items: center; gap: 10px; }
+  .brand-mark {
+    background: var(--plate); color: var(--ink);
+    padding: 2px 9px; border-radius: 5px; font-size: 18px;
+    border: 2px solid var(--ink);
+  }
+  .nav-links { display: flex; gap: 6px; }
+  .nav-links button {
+    background: none; border: none; color: #cfe7de; padding: 8px 14px;
+    border-radius: 8px; cursor: pointer; font-weight: 500;
+  }
+  .nav-links button:hover { color: #fff; background: rgba(255,255,255,.1); }
+  .nav-links button.on { color: #fff; background: rgba(255,255,255,.16); }
+  .badge {
+    background: var(--plate); color: var(--ink); font-size: 12px; font-weight: 700;
+    padding: 1px 7px; border-radius: 10px; margin-left: 6px;
+  }
+
+  .hero { padding: 44px 24px 90px; position: relative; overflow: hidden; }
+  .hero::after {
+    content: ""; position: absolute; left: 0; right: 0; bottom: 34px; height: 4px;
+    background: repeating-linear-gradient(90deg, rgba(255,255,255,.35) 0 34px, transparent 34px 68px);
+  }
+  .hero-inner { max-width: 1140px; margin: 0 auto; }
+  .hero h1 { font-size: clamp(32px, 5vw, 52px); line-height: 1.05; letter-spacing: -1.5px; max-width: 680px; }
+  .hero p { margin-top: 14px; color: #cfe7de; font-size: 18px; max-width: 520px; }
+
+  .search-wrap { max-width: 1140px; margin: -56px auto 0; padding: 0 24px; position: relative; z-index: 2; }
+  .search {
+    background: var(--card); border-radius: 16px; padding: 22px;
+    box-shadow: 0 18px 40px -18px rgba(16,27,45,.45);
+    display: grid; grid-template-columns: 1fr auto 1fr 1fr 110px auto; gap: 12px; align-items: end;
+  }
+  .field label { display: block; font-size: 13px; font-weight: 700; color: var(--muted); margin-bottom: 6px; }
+  .field input, .field select {
+    width: 100%; padding: 12px 13px; border: 1.5px solid var(--line); border-radius: 10px;
+    background: #fff; font-size: 15px;
+  }
+  .field input:focus, .field select:focus { border-color: var(--green); outline: none; box-shadow: 0 0 0 3px rgba(11,107,79,.15); }
+  .swap {
+    width: 42px; height: 42px; border-radius: 50%; border: 1.5px solid var(--line);
+    background: #fff; cursor: pointer; font-size: 18px; margin-bottom: 1px;
+    transition: transform .3s, background .2s;
+  }
+  .swap:hover { background: var(--paper); transform: rotate(180deg); }
+  .btn {
+    border-radius: 10px; padding: 13px 26px; font-weight: 700; cursor: pointer;
+    background: var(--plate); color: var(--ink); border: 2px solid var(--ink);
+    transition: transform .15s, box-shadow .15s; box-shadow: 0 3px 0 var(--ink);
+  }
+  .btn:hover { transform: translateY(-1px); box-shadow: 0 4px 0 var(--ink); }
+  .btn:active { transform: translateY(2px); box-shadow: 0 1px 0 var(--ink); }
+  .btn.green { background: var(--green); color: #fff; border-color: var(--green-dark); box-shadow: 0 3px 0 var(--green-dark); }
+  .btn.ghost { background: #fff; box-shadow: none; border-color: var(--line); color: var(--ink); }
+  .btn.ghost:hover { border-color: var(--ink); transform: none; box-shadow: none; }
+  .btn.small { padding: 8px 14px; font-size: 14px; }
+
+  .quick { max-width: 1140px; margin: 16px auto 0; padding: 0 24px; display: flex; gap: 8px; flex-wrap: wrap; align-items: center; color: var(--muted); font-size: 14px; }
+  .chip {
+    border: 1.5px solid var(--line); background: #fff; border-radius: 20px;
+    padding: 5px 13px; cursor: pointer; font-size: 14px;
+  }
+  .chip:hover { border-color: var(--green); color: var(--green); }
+
+  main { max-width: 1140px; margin: 0 auto; padding: 34px 24px 20px; }
+  .bar { display: flex; justify-content: space-between; align-items: flex-end; gap: 16px; flex-wrap: wrap; margin-bottom: 18px; }
+  .bar h2 { font-size: 28px; letter-spacing: -.5px; }
+  .bar .sub { color: var(--muted); font-size: 15px; }
+  .tools { display: flex; gap: 10px; flex-wrap: wrap; align-items: center; }
+  .tabs { display: flex; gap: 6px; flex-wrap: wrap; }
+  .tab {
+    padding: 8px 16px; border-radius: 20px; border: 1.5px solid var(--line);
+    background: #fff; cursor: pointer; font-weight: 500;
+  }
+  .tab:hover { border-color: var(--green); }
+  .tab.on { background: var(--ink); color: #fff; border-color: var(--ink); }
+  .sort { position: relative; }
+  .sort select { padding: 8px 12px; border: 1.5px solid var(--line); border-radius: 10px; background: #fff; }
+
+  .list { display: grid; gap: 16px; }
+
+  .ticket {
+    display: grid; grid-template-columns: 1fr 200px; background: var(--card);
+    border-radius: 14px; position: relative;
+    box-shadow: 0 2px 0 var(--line), 0 10px 24px -16px rgba(16,27,45,.35);
+  }
+  .ticket-main { padding: 22px 26px; }
+  .ticket-side {
+    padding: 22px; border-left: 2px dashed var(--line); position: relative;
+    display: flex; flex-direction: column; justify-content: center; gap: 10px; text-align: center;
+  }
+  .ticket-side::before, .ticket-side::after {
+    content: ""; position: absolute; left: -11px; width: 20px; height: 20px; border-radius: 50%; background: var(--paper);
+  }
+  .ticket-side::before { top: -10px; }
+  .ticket-side::after { bottom: -10px; }
+  .who { display: flex; align-items: center; gap: 12px; margin-bottom: 18px; }
+  .who .ico { width: 44px; height: 44px; border-radius: 10px; background: #e3f2ec; display: grid; place-items: center; font-size: 24px; }
+  .who h3 { font-size: 18px; line-height: 1.2; }
+  .who small { color: var(--muted); }
+  .amen { margin-left: auto; display: flex; gap: 6px; flex-wrap: wrap; justify-content: flex-end; }
+  .amen span { font-size: 12px; background: var(--paper); border-radius: 6px; padding: 2px 8px; color: var(--muted); }
+
+  .timeline { display: grid; grid-template-columns: auto 1fr auto; gap: 16px; align-items: center; }
+  .timeline .t { font-family: "Bricolage Grotesque", sans-serif; font-size: 24px; font-weight: 700; letter-spacing: -.5px; }
+  .timeline .city { color: var(--muted); font-size: 14px; }
+  .timeline .end { text-align: right; }
+  .track { text-align: center; color: var(--muted); font-size: 13px; }
+  .track .bar-line { height: 2px; background: var(--line); margin: 6px 0; position: relative; }
+  .track .bar-line::before, .track .bar-line::after {
+    content: ""; position: absolute; top: -3px; width: 8px; height: 8px; border-radius: 50%; background: var(--green);
+  }
+  .track .bar-line::before { left: 0; }
+  .track .bar-line::after { right: 0; }
+
+  .price { font-family: "Bricolage Grotesque", sans-serif; font-size: 30px; font-weight: 800; color: var(--green); line-height: 1; }
+  .price small { display: block; font-family: "DM Sans", sans-serif; font-size: 12px; font-weight: 400; color: var(--muted); margin-top: 4px; }
+  .seats { font-size: 13px; color: var(--muted); }
+  .seats.low { color: var(--danger); font-weight: 700; }
+
+  .empty { background: #fff; border: 2px dashed var(--line); border-radius: 14px; padding: 50px 24px; text-align: center; }
+  .empty h3 { font-size: 22px; margin-bottom: 6px; }
+  .empty p { color: var(--muted); margin-bottom: 18px; }
+
+  .booking { background: #fff; border-radius: 14px; padding: 18px 22px; display: flex; gap: 18px; align-items: center; flex-wrap: wrap; box-shadow: 0 2px 0 var(--line); }
+  .booking .id { font-family: "Bricolage Grotesque", sans-serif; font-weight: 700; background: var(--plate); border: 2px solid var(--ink); border-radius: 6px; padding: 2px 10px; }
+  .booking .info { flex: 1; min-width: 220px; }
+  .booking .info p { color: var(--muted); font-size: 14px; }
+
+  .overlay { position: fixed; inset: 0; background: rgba(16,27,45,.6); display: grid; place-items: center; padding: 16px; z-index: 50; animation: fade .2s; }
+  .modal { background: #fff; border-radius: 16px; width: 100%; max-width: 440px; padding: 26px; animation: rise .25s; max-height: 92vh; overflow: auto; }
+  .modal h2 { font-size: 24px; margin-bottom: 4px; }
+  .modal .route { color: var(--muted); margin-bottom: 18px; }
+  .modal .field { margin-bottom: 14px; }
+  .err { color: var(--danger); font-size: 13px; margin-top: 5px; }
+  .summary { background: var(--paper); border-radius: 10px; padding: 14px 16px; margin: 6px 0 18px; display: flex; justify-content: space-between; align-items: center; }
+  .summary strong { font-family: "Bricolage Grotesque", sans-serif; font-size: 24px; color: var(--green); }
+  .actions { display: flex; gap: 10px; justify-content: flex-end; }
+  .done { text-align: center; }
+  .done .tick { width: 60px; height: 60px; border-radius: 50%; background: var(--green); color: #fff; font-size: 30px; display: grid; place-items: center; margin: 0 auto 14px; }
+  .done p { color: var(--muted); margin-bottom: 4px; }
+  .done .booking { display: inline-flex; padding: 6px; box-shadow: none; }
+
+  .toast { position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%); background: var(--ink); color: #fff; padding: 12px 20px; border-radius: 10px; z-index: 60; animation: rise .25s; }
+
+  footer { margin-top: 50px; background: var(--ink); color: #aeb9cb; padding: 34px 24px; text-align: center; font-size: 14px; }
+  footer .brand { color: #fff; justify-content: center; margin-bottom: 8px; }
+
+  @keyframes fade { from { opacity: 0; } }
+  @keyframes rise { from { opacity: 0; transform: translateY(14px); } }
+  @media (prefers-reduced-motion: reduce) { * { animation: none !important; transition: none !important; } }
+
+  @media (max-width: 960px) {
+    .search { grid-template-columns: 1fr 1fr; }
+    .swap { display: none; }
+    .search .btn { grid-column: 1 / -1; }
+  }
+  @media (max-width: 700px) {
+    .ticket { grid-template-columns: 1fr; }
+    .ticket-side { border-left: none; border-top: 2px dashed var(--line); flex-direction: row; justify-content: space-between; align-items: center; text-align: left; flex-wrap: wrap; }
+    .ticket-side::before, .ticket-side::after { top: -10px; bottom: auto; }
+    .ticket-side::before { left: -10px; }
+    .ticket-side::after { left: auto; right: -10px; }
+    .amen { display: none; }
+    .search { grid-template-columns: 1fr; }
+    .nav-links button { padding: 8px 10px; }
+  }
+</style>
+</head>
+
+<body>
+<div id="root"></div>
+
+<script type="text/babel">
+const { useState, useMemo, useEffect } = React;
+
+/* ---------- Data ---------- */
+const VEHICLES = [
+  { id: 1, type: "Bus",   icon: "🚌", name: "Sazid Express",       number: "ST-102",  from: "Ongole",     to: "Hyderabad",  dep: "06:30", dur: 480, price: 650,  seats: 18, amenities: ["AC", "Sleeper", "Charging"] },
+  { id: 2, type: "Bus",   icon: "🚌", name: "Sazid Travels",       number: "ST-205",  from: "Vijayawada", to: "Bengaluru",  dep: "08:00", dur: 660, price: 850,  seats: 4,  amenities: ["AC", "Semi-sleeper"] },
+  { id: 3, type: "Train", icon: "🚆", name: "Sazid Rail Express",  number: "SR-501",  from: "Chennai",    to: "Hyderabad",  dep: "09:15", dur: 660, price: 950,  seats: 34, amenities: ["Pantry", "Charging"] },
+  { id: 4, type: "Car",   icon: "🚗", name: "Sazid Cab",           number: "SC-404",  from: "Ongole",     to: "Vijayawada", dep: "10:00", dur: 180, price: 1200, seats: 3,  amenities: ["AC", "Sedan"] },
+  { id: 5, type: "Taxi",  icon: "🚕", name: "Sazid Taxi",          number: "STX-99",  from: "Hyderabad",  to: "Warangal",   dep: "16:30", dur: 150, price: 1500, seats: 3,  amenities: ["AC", "Door pickup"] },
+  { id: 6, type: "Bus",   icon: "🚌", name: "Sazid Night Rider",   number: "ST-311",  from: "Hyderabad",  to: "Ongole",     dep: "21:45", dur: 500, price: 700,  seats: 22, amenities: ["AC", "Sleeper", "Blanket"] },
+  { id: 7, type: "Train", icon: "🚆", name: "Sazid Intercity",     number: "SR-618",  from: "Vijayawada", to: "Chennai",    dep: "05:50", dur: 390, price: 520,  seats: 60, amenities: ["Pantry"] },
+  { id: 8, type: "Car",   icon: "🚗", name: "Sazid Airport Cab",   number: "SC-118",  from: "Bengaluru",  to: "Chennai",    dep: "07:15", dur: 400, price: 3200, seats: 4,  amenities: ["AC", "SUV", "Toll included"] },
+  { id: 9, type: "Taxi",  icon: "🚕", name: "Sazid City Taxi",     number: "STX-27",  from: "Ongole",     to: "Hyderabad",  dep: "13:00", dur: 420, price: 4800, seats: 3,  amenities: ["AC", "Door pickup"] },
+];
+const TYPES = ["All", "Bus", "Train", "Car", "Taxi"];
+const POPULAR = [["Ongole", "Hyderabad"], ["Vijayawada", "Bengaluru"], ["Chennai", "Hyderabad"], ["Hyderabad", "Warangal"]];
+
+/* ---------- Helpers ---------- */
+const toMin = (t) => { const [h, m] = t.split(":").map(Number); return h * 60 + m; };
+const fmtTime = (mins) => {
+  const total = ((mins % 1440) + 1440) % 1440;
+  const h = Math.floor(total / 60), m = total % 60;
+  return `${h % 12 || 12}:${String(m).padStart(2, "0")} ${h < 12 ? "AM" : "PM"}`;
+};
+const fmtDur = (d) => `${Math.floor(d / 60)}h${d % 60 ? " " + (d % 60) + "m" : ""}`;
+const arrivalDays = (v) => Math.floor((toMin(v.dep) + v.dur) / 1440);
+// Local date (YYYY-MM-DD), not UTC, so the picker is correct in IST
+const today = () => {
+  const d = new Date();
+  const p = (n) => String(n).padStart(2, "0");
+  return `${d.getFullYear()}-${p(d.getMonth() + 1)}-${p(d.getDate())}`;
+};
+const nice = (iso) => new Date(iso + "T00:00").toLocaleDateString("en-IN", { weekday: "short", day: "numeric", month: "short" });
+const inr = (n) => "₹" + n.toLocaleString("en-IN");
+
+function loadBookings() {
+  try { return JSON.parse(localStorage.getItem("sazid-bookings")) || []; } catch (e) { return []; }
+}
+
+/* ---------- Booking modal ---------- */
+function BookingModal({ vehicle, date, left, onClose, onConfirm }) {
+  const [name, setName] = useState("");
+  const [phone, setPhone] = useState("");
+  const [count, setCount] = useState(1);
+  const [errors, setErrors] = useState({});
+  const [done, setDone] = useState(null);
+
+  useEffect(() => {
+    const onKey = (e) => e.key === "Escape" && onClose();
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, []);
+
+  const submit = () => {
+    const e = {};
+    if (name.trim().length < 2) e.name = "Enter the passenger's full name.";
+    if (!/^[6-9]\d{9}$/.test(phone)) e.phone = "Enter a 10-digit Indian mobile number.";
+    setErrors(e);
+    if (Object.keys(e).length) return;
+    setDone(onConfirm({ name: name.trim(), phone, count }));
+  };
+
+  return (
+    <div className="overlay" onClick={onClose}>
+      <div className="modal" role="dialog" aria-modal="true" onClick={(e) => e.stopPropagation()}>
+        {done ? (
+          <div className="done">
+            <div className="tick">✓</div>
+            <h2>Booking confirmed</h2>
+            <p>Booking ID</p>
+            <p><span className="booking"><span className="id">{done}</span></span></p>
+            <p style={{ marginTop: 12 }}>{vehicle.from} to {vehicle.to} on {nice(date)}</p>
+            <p>Departs {fmtTime(toMin(vehicle.dep))}. Show this ID when you board.</p>
+            <div className="actions" style={{ justifyContent: "center", marginTop: 20 }}>
+              <button className="btn green" onClick={onClose}>Done</button>
+            </div>
+          </div>
+        ) : (
+          <>
+            <h2>{vehicle.name}</h2>
+            <p className="route">{vehicle.from} to {vehicle.to} · {nice(date)} · {fmtTime(toMin(vehicle.dep))}</p>
+
+            <div className="field">
+              <label htmlFor="pn">Passenger name</label>
+              <input id="pn" value={name} onChange={(e) => setName(e.target.value)} autoFocus />
+              {errors.name && <div className="err">{errors.name}</div>}
+            </div>
+            <div className="field">
+              <label htmlFor="ph">Mobile number</label>
+              <input id="ph" inputMode="numeric" maxLength={10} value={phone}
+                onChange={(e) => setPhone(e.target.value.replace(/\D/g, ""))} />
+              {errors.phone && <div className="err">{errors.phone}</div>}
+            </div>
+            <div className="field">
+              <label htmlFor="sc">Seats</label>
+              <select id="sc" value={count} onChange={(e) => setCount(+e.target.value)}>
+                {Array.from({ length: Math.min(left, 6) }, (_, i) => i + 1).map((n) => (
+                  <option key={n} value={n}>{n} {n === 1 ? "seat" : "seats"}</option>
+                ))}
+              </select>
+            </div>
+
+            <div className="summary">
+              <span>Total to pay</span>
+              <strong>{inr(vehicle.price * count)}</strong>
+            </div>
+            <div className="actions">
+              <button className="btn ghost" onClick={onClose}>Cancel</button>
+              <button className="btn green" onClick={submit}>Confirm booking</button>
+            </div>
+          </>
+        )}
+      </div>
+    </div>
+  );
+}
+
+/* ---------- Ticket card ---------- */
+function Ticket({ v, left, onBook }) {
+  const dep = toMin(v.dep);
+  const plus = arrivalDays(v);
+  return (
+    <article className="ticket">
+      <div className="ticket-main">
+        <div className="who">
+          <div className="ico" aria-hidden="true">{v.icon}</div>
+          <div>
+            <h3>{v.name}</h3>
+            <small>{v.type} {v.number}</small>
+          </div>
+          <div className="amen">{v.amenities.map((a) => <span key={a}>{a}</span>)}</div>
+        </div>
+        <div className="timeline">
+          <div>
+            <div className="t">{fmtTime(dep)}</div>
+            <div className="city">{v.from}</div>
+          </div>
+          <div className="track">
+            {fmtDur(v.dur)}
+            <div className="bar-line"></div>
+            non-stop
+          </div>
+          <div className="end">
+            <div className="t">{fmtTime(dep + v.dur)}{plus > 0 && <sup style={{ fontSize: 12, color: "var(--muted)" }}> +{plus}</sup>}</div>
+            <div className="city">{v.to}</div>
+          </div>
+        </div>
+      </div>
+      <div className="ticket-side">
+        <div className="price">{inr(v.price)}<small>per seat</small></div>
+        <div className={"seats" + (left <= 5 ? " low" : "")}>
+          {left <= 0 ? "Sold out" : left <= 5 ? `Only ${left} left` : `${left} seats left`}
+        </div>
+        <button className="btn green small" disabled={left <= 0} onClick={() => onBook(v)}
+          style={left <= 0 ? { opacity: .5, cursor: "not-allowed" } : null}>
+          {left <= 0 ? "Sold out" : "Book seat"}
+        </button>
+      </div>
+    </article>
+  );
+}
+
+/* ---------- App ---------- */
+function App() {
+  const [view, setView] = useState("search");
+  const [form, setForm] = useState({ from: "", to: "", date: today() });
+  const [applied, setApplied] = useState({ from: "", to: "" });
+  const [type, setType] = useState("All");
+  const [sort, setSort] = useState("time");
+  const [bookings, setBookings] = useState(loadBookings);
+  const [active, setActive] = useState(null);
+  const [toast, setToast] = useState("");
+
+  useEffect(() => {
+    try { localStorage.setItem("sazid-bookings", JSON.stringify(bookings)); } catch (e) {}
+  }, [bookings]);
+
+  useEffect(() => {
+    if (!toast) return;
+    const t = setTimeout(() => setToast(""), 2600);
+    return () => clearTimeout(t);
+  }, [toast]);
+
+  const setField = (k) => (e) => setForm({ ...form, [k]: e.target.value });
+
+  const seatsLeft = (v, date) =>
+    v.seats - bookings.filter((b) => b.vehicleId === v.id && b.date === date).reduce((s, b) => s + b.count, 0);
+
+  const search = (e) => {
+    e && e.preventDefault();
+    setApplied({ from: form.from.trim(), to: form.to.trim() });
+    setView("search");
+    const el = document.getElementById("results");
+    if (el) el.scrollIntoView({ behavior: "smooth" });
+  };
+
+  const pickRoute = ([from, to]) => {
+    setForm({ ...form, from, to });
+    setApplied({ from, to });
+    setView("search");
+  };
+
+  const swap = () => setForm({ ...form, from: form.to, to: form.from });
+
+  const results = useMemo(() => {
+    const has = (a, b) => !b || a.toLowerCase().includes(b.toLowerCase());
+    const list = VEHICLES.filter((v) =>
+      has(v.from, applied.from) && has(v.to, applied.to) && (type === "All" || v.type === type));
+    const sorters = {
+      time: (a, b) => toMin(a.dep) - toMin(b.dep),
+      cheap: (a, b) => a.price - b.price,
+      fast: (a, b) => a.dur - b.dur,
+    };
+    return list.sort(sorters[sort]);
+  }, [applied, type, sort]);
+
+  const confirm = (details) => {
+    const id = "SZ" + Math.random().toString(36).slice(2, 7).toUpperCase();
+    setBookings((b) => [{ id, vehicleId: active.id, date: form.date, ...details }, ...b]);
+    return id;
+  };
+
+  const cancel = (id) => {
+    setBookings((b) => b.filter((x) => x.id !== id));
+    setToast("Booking " + id + " cancelled");
+  };
+
+  const reset = () => { setForm({ ...form, from: "", to: "" }); setApplied({ from: "", to: "" }); setType("All"); };
+
+  return (
+    <>
+      <header className="top">
+        <nav className="nav">
+          <div className="brand"><span className="brand-mark">SZ</span> Sazid Transport</div>
+          <div className="nav-links">
+            <button className={view === "search" ? "on" : ""} onClick={() => setView("search")}>Find a ride</button>
+            <button className={view === "bookings" ? "on" : ""} onClick={() => setView("bookings")}>
+              My bookings{bookings.length > 0 && <span className="badge">{bookings.length}</span>}
+            </button>
+          </div>
+        </nav>
+        <div className="hero">
+          <div className="hero-inner">
+            <h1>One place for every road, rail and cab across the south.</h1>
+            <p>Compare timings and fares for buses, trains, cars and taxis, then book your seat in under a minute.</p>
+          </div>
+        </div>
+      </header>
+
+      <div className="search-wrap">
+        <form className="search" onSubmit={search}>
+          <div className="field">
+            <label htmlFor="from">From</label>
+            <input id="from" list="cities" placeholder="City or town" value={form.from} onChange={setField("from")} />
+          </div>
+          <button type="button" className="swap" onClick={swap} aria-label="Swap from and to">⇄</button>
+          <div className="field">
+            <label htmlFor="to">To</label>
+            <input id="to" list="cities" placeholder="City or town" value={form.to} onChange={setField("to")} />
+          </div>
+          <div className="field">
+            <label htmlFor="date">Travel date</label>
+            <input id="date" type="date" min={today()} value={form.date} onChange={setField("date")} />
+          </div>
+          <div className="field">
+            <label htmlFor="vt">Vehicle</label>
+            <select id="vt" value={type} onChange={(e) => setType(e.target.value)}>
+              {TYPES.map((t) => <option key={t}>{t}</option>)}
+            </select>
+          </div>
+          <button className="btn" type="submit">Search</button>
+          <datalist id="cities">
+            {[...new Set(VEHICLES.flatMap((v) => [v.from, v.to]))].map((c) => <option key={c} value={c} />)}
+          </datalist>
+        </form>
+      </div>
+
+      <div className="quick">
+        Popular:
+        {POPULAR.map(([a, b]) => (
+          <button key={a + b} className="chip" onClick={() => pickRoute([a, b])}>{a} to {b}</button>
+        ))}
+      </div>
+
+      <main id="results">
+        {view === "search" ? (
+          <>
+            <div className="bar">
+              <div>
+                <h2>{applied.from || applied.to ? `${applied.from || "Anywhere"} to ${applied.to || "anywhere"}` : "All departures"}</h2>
+                <p className="sub">{results.length} {results.length === 1 ? "option" : "options"} for {nice(form.date)}</p>
+              </div>
+              <div className="tools">
+                <div className="tabs">
+                  {TYPES.map((t) => (
+                    <button key={t} className={"tab" + (type === t ? " on" : "")} onClick={() => setType(t)}>{t}</button>
+                  ))}
+                </div>
+                <label className="sort">
+                  <span style={{ position: "absolute", left: -9999 }}>Sort by</span>
+                  <select value={sort} onChange={(e) => setSort(e.target.value)}>
+                    <option value="time">Earliest departure</option>
+                    <option value="cheap">Lowest price</option>
+                    <option value="fast">Shortest trip</option>
+                  </select>
+                </label>
+              </div>
+            </div>
+
+            <div className="list">
+              {results.length ? results.map((v) => (
+                <Ticket key={v.id} v={v} left={seatsLeft(v, form.date)} onBook={setActive} />
+              )) : (
+                <div className="empty">
+                  <h3>No rides on this route yet</h3>
+                  <p>Check the spelling, try a nearby city, or switch the vehicle type to All.</p>
+                  <button className="btn green" onClick={reset}>Clear search</button>
+                </div>
+              )}
+            </div>
+          </>
+        ) : (
+          <>
+            <div className="bar">
+              <div>
+                <h2>My bookings</h2>
+                <p className="sub">{bookings.length} upcoming {bookings.length === 1 ? "trip" : "trips"}</p>
+              </div>
+            </div>
+            <div className="list">
+              {bookings.length ? bookings.map((b) => {
+                const v = VEHICLES.find((x) => x.id === b.vehicleId);
+                if (!v) return null;
+                return (
+                  <div className="booking" key={b.id}>
+                    <span className="id">{b.id}</span>
+                    <div className="info">
+                      <strong>{v.icon} {v.name}: {v.from} to {v.to}</strong>
+                      <p>{nice(b.date)}, departs {fmtTime(toMin(v.dep))} · {b.name} · {b.count} {b.count === 1 ? "seat" : "seats"} · {inr(v.price * b.count)}</p>
+                    </div>
+                    <button className="btn ghost small" onClick={() => cancel(b.id)}>Cancel booking</button>
+                  </div>
+                );
+              }) : (
+                <div className="empty">
+                  <h3>No trips booked</h3>
+                  <p>Your confirmed bookings will show up here.</p>
+                  <button className="btn green" onClick={() => setView("search")}>Find a ride</button>
+                </div>
+              )}
+            </div>
+          </>
+        )}
+      </main>
+
+      <footer>
+        <div className="brand"><span className="brand-mark">SZ</span> Sazid Transport</div>
+        <p>Safe journeys. Simple bookings. Better transportation.</p>
+        <p style={{ marginTop: 10 }}>© 2026 Sazid Transport. All rights reserved.</p>
+      </footer>
+
+      {active && (
+        <BookingModal vehicle={active} date={form.date} left={seatsLeft(active, form.date)}
+          onClose={() => setActive(null)} onConfirm={confirm} />
+      )}
+      {toast && <div className="toast" role="status">{toast}</div>}
+    </>
+  );
+}
+
+ReactDOM.createRoot(document.getElementById("root")).render(<App />);
+</script>
+</body>
+</html>
